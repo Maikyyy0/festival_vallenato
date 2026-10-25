@@ -1,0 +1,1 @@
+{% with e=votacion.estado_publico %}<span class="badge rounded-pill estado {% if e == 'Abierta' %}estado-abierta{% elif e == 'Próxima' %}estado-proxima{% else %}estado-cerrada{% endif %}">{{ e }}</span>{% endwith %}

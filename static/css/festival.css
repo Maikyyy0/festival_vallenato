@@ -1,0 +1,24 @@
+:root {
+  --festival: #5b2d9e;
+  --festival-oscuro: #3f1d72;
+  --festival-claro: #efe8f8;
+  --acento: #f2b134;
+}
+.bg-festival { background-color: var(--festival); }
+.text-festival { color: var(--festival); }
+.btn-festival { background-color: var(--festival); border-color: var(--festival); color: #fff; }
+.btn-festival:hover, .btn-festival:focus { background-color: var(--festival-oscuro); border-color: var(--festival-oscuro); color: #fff; }
+.btn-acento { background-color: var(--acento); color: #2b1a00; font-weight: 600; }
+.btn-acento:hover { background-color: #e0a024; color: #2b1a00; }
+.hero { background: linear-gradient(135deg, var(--festival) 0%, var(--festival-oscuro) 100%); color: #fff; border-radius: 1rem; }
+.hero .lead { color: rgba(255,255,255,.85); }
+.tarjeta { border: 1px solid #ddd2ee; border-radius: .75rem; transition: box-shadow .15s; }
+.tarjeta:hover { box-shadow: 0 .25rem .75rem rgba(91,45,158,.15); }
+.tarjeta a.stretched-link { color: inherit; text-decoration: none; }
+.estado { font-size: .75rem; font-weight: 600; letter-spacing: .02em; }
+.estado-abierta { background: #d7f2e1; color: #11683a; }
+.estado-proxima { background: #fff1d1; color: #7a5200; }
+.estado-cerrada { background: #ececec; color: #555; }
+.form-auth { max-width: 440px; }
+.breadcrumb a { color: var(--festival); }
+.opcion { border-left: 4px solid var(--festival); }

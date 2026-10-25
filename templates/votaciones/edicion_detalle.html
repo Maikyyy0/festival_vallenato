@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}{{ edicion.nombre }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{% url 'votaciones:ediciones' %}">Ediciones</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ edicion.anio }}</li>
+</ol></nav>
+<h1 class="h3 mb-1">{{ edicion.nombre }}</h1>
+{% if edicion.homenaje %}<p class="mb-1">{{ edicion.homenaje }}</p>{% endif %}
+<p class="text-muted small">{{ edicion.fecha_inicio|date:"d/m/Y" }} – {{ edicion.fecha_fin|date:"d/m/Y" }}</p>
+{% if edicion.descripcion %}<p>{{ edicion.descripcion }}</p>{% endif %}
+
+<h2 class="h5 mt-4 mb-3">Categorías</h2>
+{% if categorias %}
+<div class="row row-cols-1 row-cols-md-2 g-3">
+  {% for categoria in categorias %}
+  <div class="col">
+    <div class="tarjeta p-3 h-100 position-relative bg-white">
+      <h3 class="h6 mb-1">{{ categoria.nombre }}</h3>
+      {% if categoria.descripcion %}<p class="small mb-1">{{ categoria.descripcion|truncatewords:22 }}</p>{% endif %}
+      <p class="small text-muted mb-0">{{ categoria.num_votaciones }} votaci{{ categoria.num_votaciones|pluralize:"ón,ones" }}</p>
+      <a class="stretched-link" href="{{ categoria.get_absolute_url }}" aria-label="Ver {{ categoria.nombre }}"></a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-light border">Esta edición aún no tiene categorías publicadas.</div>
+{% endif %}
+{% endblock %}

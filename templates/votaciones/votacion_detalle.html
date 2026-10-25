@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titulo %}{{ votacion.titulo }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{{ votacion.categoria.edicion.get_absolute_url }}">{{ votacion.categoria.edicion.anio }}</a></li>
+  <li class="breadcrumb-item"><a href="{{ votacion.categoria.get_absolute_url }}">{{ votacion.categoria.nombre }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+</ol></nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+  <h1 class="h3 mb-0">{{ votacion.titulo }}</h1>
+  {% include "votaciones/_estado.html" %}
+</div>
+{% if votacion.descripcion %}<p>{{ votacion.descripcion }}</p>{% endif %}
+<ul class="list-unstyled small text-muted mb-3">
+  <li><strong>Abre:</strong> {{ votacion.fecha_apertura|date:"d/m/Y h:i a" }}</li>
+  <li><strong>Cierra:</strong> {{ votacion.fecha_cierre|date:"d/m/Y h:i a" }}</li>
+</ul>
+{% if votacion.reglas %}<div class="alert alert-light border small"><strong>Reglas:</strong> {{ votacion.reglas|linebreaksbr }}</div>{% endif %}
+
+<h2 class="h5 mt-4 mb-3">Opciones participantes ({{ votacion.opciones_activas|length }})</h2>
+{% if votacion.opciones_activas %}
+<div class="list-group mb-4">
+  {% for opcion in votacion.opciones_activas %}
+  <div class="list-group-item opcion d-flex gap-3 align-items-start">
+    {% if opcion.imagen %}<img src="{{ opcion.imagen.url }}" alt="{{ opcion.nombre }}" width="64" height="64" class="rounded object-fit-cover">{% endif %}
+    <div>
+      <p class="fw-semibold mb-1">{{ opcion.nombre }}</p>
+      {% if opcion.descripcion %}<p class="small text-muted mb-0">{{ opcion.descripcion }}</p>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Esta votación aún no tiene opciones registradas.</p>
+{% endif %}
+
+<div class="tarjeta p-3 bg-white">
+  {% if not user.is_authenticated %}
+    <p class="mb-2">Para participar en las votaciones debe tener una cuenta.</p>
+    <a class="btn btn-festival" href="{% url 'cuentas:login' %}?next={{ request.path|urlencode }}">Iniciar sesión</a>
+    <a class="btn btn-outline-secondary" href="{% url 'cuentas:registro' %}">Registrarse</a>
+  {% elif votacion.esta_abierta %}
+    <p class="mb-0 small text-muted">La emisión y confirmación del voto (CU-04) se habilitará en la siguiente entrega del proyecto.</p>
+  {% else %}
+    <p class="mb-0 small text-muted">Esta votación no está abierta, por lo que no admite votos.</p>
+  {% endif %}
+</div>
+{% endblock %}

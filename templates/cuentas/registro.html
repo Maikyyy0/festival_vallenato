@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Registro{% endblock %}
+{% block contenido %}
+<div class="form-auth mx-auto">
+  <h1 class="h3 mb-1">Crear cuenta de votante</h1>
+  <p class="text-muted small mb-4">Solo los usuarios registrados podrán votar (RN-05).</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    {% for campo in form %}
+      {% if campo.name == "acepta_datos" %}
+        <div class="form-check mb-3">
+          {{ campo }} <label class="form-check-label small" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      {% else %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% if campo.name == "password1" %}<div class="form-text">Mínimo 8 caracteres, no solo números ni una contraseña común.</div>{% endif %}
+          {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-festival w-100">Crear cuenta</button>
+  </form>
+  <p class="small mt-3 text-center">¿Ya tiene cuenta? <a href="{% url 'cuentas:login' %}">Inicie sesión</a></p>
+</div>
+{% endblock %}

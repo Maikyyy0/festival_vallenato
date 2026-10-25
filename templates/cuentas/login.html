@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<div class="form-auth mx-auto">
+  <h1 class="h3 mb-4">Iniciar sesión</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    {% for campo in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        {{ campo }}
+        {% for e in campo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-festival w-100">Ingresar</button>
+  </form>
+  <p class="small mt-3 text-center">¿No tiene cuenta? <a href="{% url 'cuentas:registro' %}">Regístrese</a></p>
+</div>
+{% endblock %}

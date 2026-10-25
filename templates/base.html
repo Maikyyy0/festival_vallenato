@@ -1,0 +1,58 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Votaciones{% endblock %} · Festival de la Leyenda Vallenata</title>
+  <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/festival.css' %}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-md navbar-dark bg-festival">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="{% url 'votaciones:inicio' %}">Votaciones · Festival Vallenato</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{% url 'votaciones:inicio' %}">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'votaciones:ediciones' %}">Ediciones</a></li>
+        </ul>
+        <ul class="navbar-nav align-items-md-center gap-md-2">
+          {% if user.is_authenticated %}
+            <li class="nav-item"><span class="navbar-text text-white-50">Hola, {{ user.first_name|default:user.username }}</span></li>
+            {% if user.is_staff %}<li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Administración</a></li>{% endif %}
+            <li class="nav-item">
+              <form method="post" action="{% url 'cuentas:logout' %}" class="d-inline">{% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-light">Cerrar sesión</button>
+              </form>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'cuentas:login' %}">Iniciar sesión</a></li>
+            <li class="nav-item"><a class="btn btn-sm btn-acento" href="{% url 'cuentas:registro' %}">Registrarse</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4 flex-grow-1">
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="border-top py-3 small text-muted">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+      <span>Proyecto académico · Desarrollo Web · Areandina</span>
+      <span>Votaciones del público, independientes de los concursos oficiales del Festival.</span>
+    </div>
+  </footer>
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

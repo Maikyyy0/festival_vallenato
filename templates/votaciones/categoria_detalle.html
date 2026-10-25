@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}{{ categoria.nombre }}{% endblock %}
+{% block contenido %}
+<nav aria-label="Ruta"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{% url 'votaciones:ediciones' %}">Ediciones</a></li>
+  <li class="breadcrumb-item"><a href="{{ categoria.edicion.get_absolute_url }}">{{ categoria.edicion.anio }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ categoria.nombre }}</li>
+</ol></nav>
+<h1 class="h3 mb-1">{{ categoria.nombre }}</h1>
+{% if categoria.descripcion %}<p>{{ categoria.descripcion }}</p>{% endif %}
+
+<h2 class="h5 mt-4 mb-3">Votaciones</h2>
+{% if votaciones %}
+<div class="row row-cols-1 row-cols-md-2 g-3">
+  {% for votacion in votaciones %}{% include "votaciones/_votacion_item.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="alert alert-light border">Esta categoría todavía no tiene votaciones publicadas.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="hero p-4 p-md-5 mb-4">
+  {% if edicion %}
+    <p class="text-uppercase small mb-1 fw-semibold" style="color: var(--acento)">{% if edicion.numero %}{{ edicion.numero }}.º {% endif %}Festival de la Leyenda Vallenata</p>
+    <h1 class="display-6 fw-bold">{{ edicion.nombre }}</h1>
+    {% if edicion.homenaje %}<p class="lead mb-2">{{ edicion.homenaje }}</p>{% endif %}
+    <p class="mb-3">{{ edicion.fecha_inicio|date:"j \d\e F"|lower }} al {{ edicion.fecha_fin|date:"j \d\e F \d\e Y"|lower }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-acento" href="{{ edicion.get_absolute_url }}">Ver categorías</a>
+      {% if not user.is_authenticated %}<a class="btn btn-outline-light" href="{% url 'cuentas:login' %}">Iniciar sesión</a>{% endif %}
+    </div>
+  {% else %}
+    <h1 class="h3">Aún no hay ediciones publicadas</h1>
+    <p class="mb-0">Cuando la organización publique una edición, aparecerá aquí.</p>
+  {% endif %}
+</section>
+
+<section class="mb-4">
+  <h2 class="h5 mb-3">Votaciones abiertas</h2>
+  {% if abiertas %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for votacion in abiertas %}{% include "votaciones/_votacion_item.html" %}{% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No hay votaciones abiertas en este momento.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="h5 mb-3">Próximas votaciones</h2>
+  {% if proximas %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for votacion in proximas %}{% include "votaciones/_votacion_item.html" %}{% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No hay votaciones programadas.</p>
+  {% endif %}
+</section>
+{% endblock %}
