@@ -19,7 +19,8 @@ EDICIÓN → CATEGORÍA → VOTACIÓN → OPCIÓN
 | Administración con Django Admin | `votaciones/admin.py` (`/admin/`) |
 | Interfaz pública con datos reales de MySQL | `votaciones/views.py`, `templates/` |
 | Datos de prueba | `python manage.py cargar_datos_prueba` |
-| 23 pruebas automáticas | `votaciones/tests.py`, `cuentas/tests.py` |
+| Emisión de votos con confirmación y registro (CU-04, RN-02) | `votaciones/views.py` (`votar`, `mis_votos`), modelo `Voto` |
+| 38 pruebas automáticas | `votaciones/tests.py`, `cuentas/tests.py` |
 
 ## Requisitos
 
@@ -102,12 +103,16 @@ python manage.py test -v 2
 | `/cuentas/registro/` | `registro` | Crear cuenta de votante |
 | `/cuentas/ingresar/` | `IngresoView` | Iniciar sesión con correo |
 | `/cuentas/salir/` | `SalidaView` | Cerrar sesión (POST) |
+| `/votaciones/<id>/votar/` | `votar` | Emitir y confirmar el voto (POST, requiere sesión) |
+| `/mis-votos/` | `mis_votos` | Historial de votos del usuario |
 | `/admin/` | Django Admin | Gestión de ediciones, categorías, votaciones y opciones |
 
 ## Reglas que ya aplica el sistema
 
 - **RN-01**: cada opción pertenece a una votación, cada votación a una categoría y cada categoría a una edición.
 - **RN-03 (parcial)**: una votación solo se considera abierta si su estado es *Abierta* y la fecha actual está entre apertura y cierre.
+- **RN-02**: un usuario solo puede votar una vez por votación (restricción única en MySQL + validación en la vista; se confirma antes de registrar y no se puede modificar).
+- **RN-03**: solo se registran votos si la votación está *Abierta* y dentro de fechas; la opción debe ser activa y de esa votación.
 - **RN-07**: no se pueden borrar ediciones, categorías ni votaciones que tengan registros asociados (`on_delete=PROTECT`); se desactivan.
 - **RN-09**: el registro exige aceptar el tratamiento de datos (Ley 1581 de 2012) y guarda la fecha de autorización.
 - Lo que está en borrador o inactivo no aparece en la interfaz pública.
@@ -119,8 +124,7 @@ python manage.py test -v 2
 
 ## Pendiente para próximas entregas
 
-Modelo `Voto` con restricción única (usuario, votación), emisión y confirmación del voto (CU-04),
-resultados (CU-07), bloqueo por intentos fallidos de inicio de sesión, verificación de correo,
+Resultados (CU-07), bloqueo por intentos fallidos de inicio de sesión, verificación de correo,
 auditoría y despliegue.
 
 ## Integrantes

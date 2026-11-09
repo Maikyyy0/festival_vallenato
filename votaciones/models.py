@@ -3,10 +3,10 @@ Modelos de la jerarquía configurable definida en la Entrega 1 (RN-01):
 
     Edición  1 ── N  Categoría  1 ── N  Votación  1 ── N  Opción
 
-El modelo Voto (con la restricción única usuario + votación, RN-02) se
-incorporará en la siguiente entrega; esta estructura ya lo permite porque
-cada Opción conoce su Votación.
+Voto (RN-02) registra qué usuario eligió qué opción en cada votación, con
+una restricción única (usuario, votación): un voto por persona y votación.
 """
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
@@ -152,3 +152,33 @@ class Opcion(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class Voto(models.Model):
+    """Voto emitido por un usuario en una votación (RN-02: uno por votación)."""
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="votos", verbose_name="votante"
+    )
+    votacion = models.ForeignKey(
+        Votacion, on_delete=models.PROTECT, related_name="votos", verbose_name="votación"
+    )
+    opcion = models.ForeignKey(
+        Opcion, on_delete=models.PROTECT, related_name="votos", verbose_name="opción elegida"
+    )
+    fecha_hora = models.DateTimeField("fecha y hora del voto", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "voto"
+        verbose_name_plural = "votos"
+        ordering = ["-fecha_hora"]
+        constraints = [
+            models.UniqueConstraint(fields=["usuario", "votacion"], name="un_voto_por_usuario_y_votacion"),
+        ]
+
+    def __str__(self):
+        return f"{self.usuario} → {self.opcion} ({self.votacion})"
+
+    def clean(self):
+        if self.opcion_id and self.votacion_id and self.opcion.votacion_id != self.votacion_id:
+            raise ValidationError({"opcion": "La opción elegida no pertenece a esta votación."})

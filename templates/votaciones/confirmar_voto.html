@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Confirmar voto{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Confirme su voto</h1>
+<div class="tarjeta p-3 bg-white">
+  <p class="mb-1">Votación: <strong>{{ votacion.titulo }}</strong></p>
+  <p class="mb-3">Su elección: <strong>{{ opcion.nombre }}</strong></p>
+  <p class="small text-muted">Una vez confirmado, el voto no se puede modificar ni repetir.</p>
+  <form method="post" action="{% url 'votaciones:votar' votacion.pk %}" class="d-flex gap-2">{% csrf_token %}
+    <input type="hidden" name="opcion" value="{{ opcion.pk }}">
+    <input type="hidden" name="confirmado" value="1">
+    <button type="submit" class="btn btn-festival">Confirmar voto</button>
+    <a class="btn btn-outline-secondary" href="{{ votacion.get_absolute_url }}">Cambiar opción</a>
+  </form>
+</div>
+{% endblock %}

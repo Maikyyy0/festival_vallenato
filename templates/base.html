@@ -22,6 +22,7 @@
         <ul class="navbar-nav align-items-md-center gap-md-2">
           {% if user.is_authenticated %}
             <li class="nav-item"><span class="navbar-text text-white-50">Hola, {{ user.first_name|default:user.username }}</span></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'votaciones:mis_votos' %}">Mis votos</a></li>
             {% if user.is_staff %}<li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Administración</a></li>{% endif %}
             <li class="nav-item">
               <form method="post" action="{% url 'cuentas:logout' %}" class="d-inline">{% csrf_token %}

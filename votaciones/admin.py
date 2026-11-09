@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Categoria, Edicion, Opcion, Votacion
+from .models import Categoria, Edicion, Opcion, Votacion, Voto
 
 admin.site.site_header = "Festival de la Leyenda Vallenata · Administración de votaciones"
 admin.site.site_title = "Votaciones Festival Vallenato"
@@ -83,3 +83,23 @@ class OpcionAdmin(admin.ModelAdmin):
     search_fields = ("nombre", "descripcion")
     list_editable = ("orden", "activa")
     list_select_related = ("votacion",)
+
+
+@admin.register(Voto)
+class VotoAdmin(admin.ModelAdmin):
+    """Registro de votos: solo lectura, para preservar la integridad del conteo."""
+
+    list_display = ("fecha_hora", "usuario", "votacion", "opcion")
+    list_filter = ("votacion__categoria__edicion", "votacion")
+    search_fields = ("usuario__email", "usuario__username", "opcion__nombre")
+    list_select_related = ("usuario", "votacion", "opcion")
+    readonly_fields = ("usuario", "votacion", "opcion", "fecha_hora")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

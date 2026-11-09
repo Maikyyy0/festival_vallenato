@@ -40,8 +40,22 @@
     <p class="mb-2">Para participar en las votaciones debe tener una cuenta.</p>
     <a class="btn btn-festival" href="{% url 'cuentas:login' %}?next={{ request.path|urlencode }}">Iniciar sesión</a>
     <a class="btn btn-outline-secondary" href="{% url 'cuentas:registro' %}">Registrarse</a>
-  {% elif votacion.esta_abierta %}
-    <p class="mb-0 small text-muted">La emisión y confirmación del voto (CU-04) se habilitará en la siguiente entrega del proyecto.</p>
+  {% elif voto %}
+    <p class="mb-0"><strong>Ya votó en esta votación.</strong> Su voto: <span class="fw-semibold">{{ voto.opcion.nombre }}</span>
+      <span class="small text-muted">({{ voto.fecha_hora|date:"d/m/Y h:i a" }})</span></p>
+  {% elif votacion.esta_abierta and votacion.opciones_activas %}
+    <form method="post" action="{% url 'votaciones:votar' votacion.pk %}">{% csrf_token %}
+      <fieldset>
+        <legend class="h6">Elija su opción</legend>
+        {% for opcion in votacion.opciones_activas %}
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="opcion" id="op{{ opcion.pk }}" value="{{ opcion.pk }}" required>
+          <label class="form-check-label" for="op{{ opcion.pk }}">{{ opcion.nombre }}</label>
+        </div>
+        {% endfor %}
+      </fieldset>
+      <button type="submit" class="btn btn-festival mt-2">Votar</button>
+    </form>
   {% else %}
     <p class="mb-0 small text-muted">Esta votación no está abierta, por lo que no admite votos.</p>
   {% endif %}

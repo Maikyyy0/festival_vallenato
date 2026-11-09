@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Mis votos{% endblock %}
+{% block contenido %}
+<h1 class="h3 mb-3">Mis votos</h1>
+{% if votos %}
+<div class="list-group">
+  {% for v in votos %}
+  <a class="list-group-item list-group-item-action" href="{{ v.votacion.get_absolute_url }}">
+    <div class="fw-semibold">{{ v.votacion.titulo }}</div>
+    <div class="small text-muted">{{ v.votacion.categoria.nombre }} · {{ v.votacion.categoria.edicion.anio }}</div>
+    <div>Votó por: <strong>{{ v.opcion.nombre }}</strong> <span class="small text-muted">· {{ v.fecha_hora|date:"d/m/Y h:i a" }}</span></div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Aún no ha emitido ningún voto.</p>
+{% endif %}
+{% endblock %}
