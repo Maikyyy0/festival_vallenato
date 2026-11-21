@@ -1,16 +1,25 @@
 {% extends "base.html" %}
 {% block titulo %}Confirmar voto{% endblock %}
 {% block contenido %}
-<h1 class="h3 mb-3">Confirme su voto</h1>
-<div class="tarjeta p-3 bg-white">
-  <p class="mb-1">Votación: <strong>{{ votacion.titulo }}</strong></p>
-  <p class="mb-3">Su elección: <strong>{{ opcion.nombre }}</strong></p>
-  <p class="small text-muted">Una vez confirmado, el voto no se puede modificar ni repetir.</p>
-  <form method="post" action="{% url 'votaciones:votar' votacion.pk %}" class="d-flex gap-2">{% csrf_token %}
+<div class="form-auth mx-auto">
+  <p class="small text-festival fw-semibold mb-1">Paso 2 de 2 · Confirmación</p>
+  <h1 class="h3 mb-3">Confirme su voto</h1>
+  <div class="tarjeta p-3 bg-white mb-3">
+    <dl class="row mb-0 small">
+      <dt class="col-4">Edición</dt><dd class="col-8">{{ votacion.categoria.edicion.nombre }}</dd>
+      <dt class="col-4">Categoría</dt><dd class="col-8">{{ votacion.categoria.nombre }}</dd>
+      <dt class="col-4">Votación</dt><dd class="col-8">{{ votacion.titulo }}</dd>
+      <dt class="col-4">Su elección</dt><dd class="col-8 fw-semibold fs-6">{{ opcion.nombre }}</dd>
+    </dl>
+  </div>
+  <div class="alert alert-warning small">
+    Una vez confirmado <strong>no podrá cambiar su voto</strong> ni votar en otra votación de la categoría «{{ votacion.categoria.nombre }}».
+  </div>
+  <form method="post" action="{% url 'votaciones:confirmar_voto' votacion.pk %}">
+    {% csrf_token %}
     <input type="hidden" name="opcion" value="{{ opcion.pk }}">
-    <input type="hidden" name="confirmado" value="1">
-    <button type="submit" class="btn btn-festival">Confirmar voto</button>
-    <a class="btn btn-outline-secondary" href="{{ votacion.get_absolute_url }}">Cambiar opción</a>
+    <button type="submit" class="btn btn-festival w-100 mb-2">Confirmar voto</button>
   </form>
+  <a href="{{ votacion.get_absolute_url }}" class="btn btn-outline-secondary w-100">Volver y cambiar opción</a>
 </div>
 {% endblock %}

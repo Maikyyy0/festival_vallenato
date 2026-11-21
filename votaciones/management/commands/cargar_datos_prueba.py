@@ -6,15 +6,18 @@ Carga datos de prueba en MySQL para demostrar la aplicación.
 
 Todas las canciones, agrupaciones y personas son FICTICIAS. Las categorías
 son ejemplos y no representan categorías aprobadas por el cliente.
-No crea usuarios ni contraseñas: el administrador se crea con createsuperuser.
+No guarda contraseñas: el administrador se crea con createsuperuser y los
+votantes ficticios se crean SIN contraseña utilizable (no pueden iniciar
+sesión); solo sirven para que la consulta administrativa tenga votos.
 """
 from datetime import date, datetime, timedelta
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from votaciones.models import Categoria, Edicion, Opcion, Votacion
+from votaciones.models import Categoria, Edicion, Opcion, Votacion, Voto
 
 E = Edicion.Estado
 V = Votacion.Estado
@@ -29,6 +32,8 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **opciones):
         if opciones["reiniciar"]:
+            Voto.objects.all().delete()
+            get_user_model().objects.filter(username__startswith="votante.ficticio").delete()
             Opcion.objects.all().delete()
             Votacion.objects.all().delete()
             Categoria.objects.all().delete()
@@ -91,6 +96,17 @@ class Command(BaseCommand):
             ("Piloneras Flor de Mayo (ejemplo)", "Grupo ficticio de 10 integrantes."),
         ])
 
+        # Segundo subevento de la MISMA categoría: sirve para demostrar que el
+        # usuario solo puede votar en uno de los dos (regla central).
+        v2b = self.votacion(c_piloneras, "Grupo de piloneras favorito · Infantiles", V.ABIERTA,
+            ahora - timedelta(days=1), ahora + timedelta(days=20),
+            "Subevento de la misma categoría: vote por el grupo infantil que más le guste.",
+            "Un solo voto en toda la categoría de piloneras, sea en mayores o en infantiles.")
+        self.opciones(v2b, [
+            ("Semillero Pilonerito (ejemplo)", "Grupo infantil ficticio de 14 integrantes."),
+            ("Semillero Cayena (ejemplo)", "Grupo infantil ficticio de 11 integrantes."),
+        ])
+
         v3 = self.votacion(c_vestuario, "Mejor vestuario del desfile de piloneras", V.ABIERTA,
             ahora + timedelta(days=60), ahora + timedelta(days=75),
             "Se abrirá después del desfile. Programada: aparece como Próxima.")
@@ -121,9 +137,19 @@ class Command(BaseCommand):
             ("Canción de prueba 2025 · B", "Dato ficticio."),
         ])
 
+        # ---------------- Votantes y votos ficticios ----------------
+        self.votos_ficticios({
+            "votante.ficticio1": [(v1, 0), (v2, 1), (v5, 0)],
+            "votante.ficticio2": [(v1, 1), (v2b, 0)],
+            "votante.ficticio3": [(v1, 0), (v2, 0), (v5, 1)],
+            "votante.ficticio4": [(v1, 2)],
+            "votante.ficticio5": [(v2b, 1), (v5, 0)],
+        })
+
         self.stdout.write(self.style.SUCCESS(
             f"Listo: {Edicion.objects.count()} ediciones, {Categoria.objects.count()} categorías, "
-            f"{Votacion.objects.count()} votaciones y {Opcion.objects.count()} opciones en MySQL."
+            f"{Votacion.objects.count()} votaciones, {Opcion.objects.count()} opciones y "
+            f"{Voto.objects.count()} votos en MySQL."
         ))
 
     # ------------------------------------------------------------------
@@ -155,3 +181,21 @@ class Command(BaseCommand):
             Opcion.objects.update_or_create(
                 votacion=votacion, nombre=nombre, defaults=dict(descripcion=descripcion, orden=i, activa=True)
             )
+
+    def votos_ficticios(self, plan):
+        User = get_user_model()
+        for i, (usuario_nombre, votos) in enumerate(plan.items(), start=1):
+            usuario, creado = User.objects.get_or_create(
+                username=usuario_nombre,
+                defaults=dict(email=f"{usuario_nombre}@ejemplo.com", first_name=f"Votante ficticio {i}"),
+            )
+            if creado:
+                usuario.set_unusable_password()
+                usuario.save()
+            for votacion, indice in votos:
+                opcion = list(votacion.opciones.order_by("orden"))[indice]
+                # get_or_create respeta la restricción única (usuario, edición, categoría)
+                Voto.objects.get_or_create(
+                    usuario=usuario, edicion=votacion.categoria.edicion, categoria=votacion.categoria,
+                    defaults=dict(votacion=votacion, opcion=opcion),
+                )

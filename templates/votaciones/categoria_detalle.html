@@ -9,6 +9,10 @@
 <h1 class="h3 mb-1">{{ categoria.nombre }}</h1>
 {% if categoria.descripcion %}<p>{{ categoria.descripcion }}</p>{% endif %}
 
+{% if votaciones|length > 1 %}<p class="small text-muted">Esta categoría tiene varias votaciones (subeventos). Puede votar en <strong>una sola</strong> de ellas.</p>{% endif %}
+{% if voto_previo %}
+<div class="alert alert-success small">Ya votó en esta categoría por «{{ voto_previo.opcion.nombre }}» ({{ voto_previo.votacion.titulo }}).</div>
+{% endif %}
 <h2 class="h5 mt-4 mb-3">Votaciones</h2>
 {% if votaciones %}
 <div class="row row-cols-1 row-cols-md-2 g-3">

@@ -22,3 +22,15 @@
 .form-auth { max-width: 440px; }
 .breadcrumb a { color: var(--festival); }
 .opcion { border-left: 4px solid var(--festival); }
+.opcion-elegible { cursor: pointer; }
+.opcion-elegible:has(input:checked) { background: var(--festival-claro); border-color: var(--festival); }
+.form-check-input:checked { background-color: var(--festival); border-color: var(--festival); }
+
+/* Entrega 4: resultados */
+.barra { height: .6rem; background: #ece6f5; border-radius: 1rem; overflow: hidden; }
+.barra > span { display: block; height: 100%; background: var(--festival); border-radius: 1rem; }
+.barra.ganadora > span { background: var(--acento); }
+.cifra { font-size: 1.75rem; font-weight: 700; color: var(--festival); line-height: 1; }
+
+/* Panel de datos (visualización dinámica con JavaScript) */
+.kpi { border: 1px solid #ddd2ee; border-radius: .75rem; background: #fff; }

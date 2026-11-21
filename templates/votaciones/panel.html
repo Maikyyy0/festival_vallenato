@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Panel de datos{% endblock %}
+{% block contenido %}
+<div id="panel"
+     data-url-resumen="{% url 'votaciones:api_resumen' %}"
+     data-url-resultados="{% url 'votaciones:api_votacion_resultados' 0 %}"
+     data-url-votacion="{% url 'votaciones:votacion_detalle' 0 %}">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+      <h1 class="h3 mb-0">Panel de datos</h1>
+      <p class="text-muted mb-0 small">Datos en vivo desde MySQL, consultados mediante la API JSON.</p>
+    </div>
+    <span class="small text-muted" id="panel-actualizado" aria-live="polite">Cargando…</span>
+  </div>
+
+  <div id="panel-error" class="alert alert-danger d-none" role="alert"></div>
+
+  <section class="row row-cols-2 row-cols-md-5 g-3 mb-2" aria-label="Cifras generales" id="panel-kpis"></section>
+  <p class="small text-muted mb-4" id="panel-estados"></p>
+
+  <div class="row g-4">
+    <section class="col-lg-6" aria-labelledby="t-estado">
+      <h2 class="h5" id="t-estado">Participación por votación</h2>
+      <p class="small text-muted">Votos emitidos en cada votación publicada.</p>
+      <div id="panel-participacion"></div>
+    </section>
+
+    <section class="col-lg-6" aria-labelledby="t-resultados">
+      <h2 class="h5" id="t-resultados">Resultados por opción</h2>
+      <label for="panel-selector" class="form-label small text-muted">Votación</label>
+      <select id="panel-selector" class="form-select mb-3"></select>
+      <div id="panel-resultados" aria-live="polite"></div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/panel.js' %}"></script>{% endblock %}

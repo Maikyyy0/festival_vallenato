@@ -3,6 +3,7 @@
 {% block contenido %}
 <div class="form-auth mx-auto">
   <h1 class="h3 mb-4">Iniciar sesión</h1>
+  {% if next and "/votaciones/" in next %}<div class="alert alert-warning small">Para votar debe iniciar sesión. Su solicitud no se registró.</div>{% endif %}
   <form method="post" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}

@@ -1,18 +1,42 @@
 {% extends "base.html" %}
 {% block titulo %}Mis votos{% endblock %}
 {% block contenido %}
-<h1 class="h3 mb-3">Mis votos</h1>
+<h1 class="h3 mb-1">Mis votos</h1>
+<p class="text-muted small mb-4">Categorías en las que ya participó. Cada categoría admite un solo voto por edición.</p>
+
+<h2 class="h5 mb-3">Categorías votadas ({{ votos|length }})</h2>
 {% if votos %}
-<div class="list-group">
-  {% for v in votos %}
-  <a class="list-group-item list-group-item-action" href="{{ v.votacion.get_absolute_url }}">
-    <div class="fw-semibold">{{ v.votacion.titulo }}</div>
-    <div class="small text-muted">{{ v.votacion.categoria.nombre }} · {{ v.votacion.categoria.edicion.anio }}</div>
-    <div>Votó por: <strong>{{ v.opcion.nombre }}</strong> <span class="small text-muted">· {{ v.fecha_hora|date:"d/m/Y h:i a" }}</span></div>
-  </a>
+<div class="list-group mb-4">
+  {% for voto in votos %}
+  <div class="list-group-item opcion">
+    <div class="d-flex justify-content-between flex-wrap gap-1">
+      <span class="fw-semibold">{{ voto.categoria.nombre }}</span>
+      <span class="badge rounded-pill estado estado-abierta">Votada</span>
+    </div>
+    <p class="mb-1">Su elección: <strong>{{ voto.opcion.nombre }}</strong></p>
+    <p class="small text-muted mb-0">{{ voto.votacion.titulo }} · Edición {{ voto.edicion.anio }} · {{ voto.fecha|date:"d/m/Y h:i a" }} · Comprobante n.º {{ voto.pk }}</p>
+  </div>
   {% endfor %}
 </div>
 {% else %}
-<p class="text-muted">Aún no ha emitido ningún voto.</p>
+<div class="alert alert-light border">Todavía no ha votado en ninguna categoría.</div>
+{% endif %}
+
+<h2 class="h5 mb-3">Categorías abiertas pendientes</h2>
+{% if pendientes %}
+<div class="row row-cols-1 row-cols-md-2 g-3">
+  {% for categoria, lista in pendientes.items %}
+  <div class="col">
+    <div class="tarjeta p-3 h-100 bg-white">
+      <p class="fw-semibold mb-2">{{ categoria.nombre }}</p>
+      {% for votacion in lista %}
+        <a class="btn btn-sm btn-outline-secondary mb-1 me-1" href="{{ votacion.get_absolute_url }}">{{ votacion.titulo }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No tiene categorías abiertas pendientes por votar.</p>
 {% endif %}
 {% endblock %}

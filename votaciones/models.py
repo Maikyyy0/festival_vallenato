@@ -3,8 +3,9 @@ Modelos de la jerarquía configurable definida en la Entrega 1 (RN-01):
 
     Edición  1 ── N  Categoría  1 ── N  Votación  1 ── N  Opción
 
-Voto (RN-02) registra qué usuario eligió qué opción en cada votación, con
-una restricción única (usuario, votación): un voto por persona y votación.
+Entrega 3: el modelo Voto (al final de este archivo) vincula usuario,
+edición, categoría, votación y opción, con una restricción única por
+usuario + edición + categoría.
 """
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -155,30 +156,53 @@ class Opcion(models.Model):
 
 
 class Voto(models.Model):
-    """Voto emitido por un usuario en una votación (RN-02: uno por votación)."""
+    """
+    Voto emitido por un usuario registrado (Entrega 3).
+
+    Regla central: un usuario elige UNA sola opción por categoría y edición.
+    Aunque la categoría tenga varias votaciones (subeventos), solo se acepta
+    un voto en toda la categoría. La regla se garantiza en dos niveles:
+
+    1. En Django: votaciones/servicios.py valida antes de guardar.
+    2. En MySQL: la restricción única `un_voto_por_usuario_categoria_edicion`
+       impide guardar un segundo registro aunque lleguen dos solicitudes
+       simultáneas.
+    """
 
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="votos", verbose_name="votante"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="votos", verbose_name="usuario"
     )
-    votacion = models.ForeignKey(
-        Votacion, on_delete=models.PROTECT, related_name="votos", verbose_name="votación"
-    )
-    opcion = models.ForeignKey(
-        Opcion, on_delete=models.PROTECT, related_name="votos", verbose_name="opción elegida"
-    )
-    fecha_hora = models.DateTimeField("fecha y hora del voto", auto_now_add=True)
+    edicion = models.ForeignKey(Edicion, on_delete=models.PROTECT, related_name="votos", verbose_name="edición")
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, related_name="votos", verbose_name="categoría")
+    votacion = models.ForeignKey(Votacion, on_delete=models.PROTECT, related_name="votos", verbose_name="votación")
+    opcion = models.ForeignKey(Opcion, on_delete=models.PROTECT, related_name="votos", verbose_name="opción")
+    fecha = models.DateTimeField("fecha del voto", auto_now_add=True)
+    ip = models.GenericIPAddressField("dirección IP", null=True, blank=True)
 
     class Meta:
         verbose_name = "voto"
         verbose_name_plural = "votos"
-        ordering = ["-fecha_hora"]
+        ordering = ["-fecha"]
         constraints = [
-            models.UniqueConstraint(fields=["usuario", "votacion"], name="un_voto_por_usuario_y_votacion"),
+            models.UniqueConstraint(
+                fields=["usuario", "edicion", "categoria"],
+                name="un_voto_por_usuario_categoria_edicion",
+                violation_error_message="El usuario ya votó en esta categoría de la edición.",
+            ),
         ]
+        indexes = [models.Index(fields=["opcion"], name="voto_opcion_idx")]
 
     def __str__(self):
-        return f"{self.usuario} → {self.opcion} ({self.votacion})"
+        return f"{self.usuario} → {self.opcion} ({self.categoria})"
 
     def clean(self):
+        """Coherencia de la jerarquía: opción ∈ votación ∈ categoría ∈ edición."""
+        errores = {}
         if self.opcion_id and self.votacion_id and self.opcion.votacion_id != self.votacion_id:
-            raise ValidationError({"opcion": "La opción elegida no pertenece a esta votación."})
+            errores["opcion"] = "La opción no pertenece a la votación."
+        if self.votacion_id and self.categoria_id and self.votacion.categoria_id != self.categoria_id:
+            errores["votacion"] = "La votación no pertenece a la categoría."
+        if self.categoria_id and self.edicion_id and self.categoria.edicion_id != self.edicion_id:
+            errores["categoria"] = "La categoría no pertenece a la edición."
+        if errores:
+            raise ValidationError(errores)

@@ -13,51 +13,60 @@
 </div>
 {% if votacion.descripcion %}<p>{{ votacion.descripcion }}</p>{% endif %}
 <ul class="list-unstyled small text-muted mb-3">
-  <li><strong>Abre:</strong> {{ votacion.fecha_apertura|date:"d/m/Y h:i a" }}</li>
-  <li><strong>Cierra:</strong> {{ votacion.fecha_cierre|date:"d/m/Y h:i a" }}</li>
+  <li><strong>Categoría:</strong> {{ votacion.categoria.nombre }} · Edición {{ votacion.categoria.edicion.anio }}</li>
+  <li><strong>Abre:</strong> {{ votacion.fecha_apertura|date:"d/m/Y h:i a" }} · <strong>Cierra:</strong> {{ votacion.fecha_cierre|date:"d/m/Y h:i a" }}</li>
 </ul>
-{% if votacion.reglas %}<div class="alert alert-light border small"><strong>Reglas:</strong> {{ votacion.reglas|linebreaksbr }}</div>{% endif %}
+{% if votacion.reglas %}<div class="alert alert-light border small mb-3"><strong>Reglas:</strong> {{ votacion.reglas|linebreaksbr }}</div>{% endif %}
+
+{% if voto_previo %}
+  <div class="alert alert-success" role="status">
+    <strong>Ya votó en esta categoría.</strong> Eligió «{{ voto_previo.opcion.nombre }}»
+    {% if voto_previo.votacion_id != votacion.pk %}en «{{ voto_previo.votacion.titulo }}»{% endif %}
+    ({{ voto_previo.fecha|date:"d/m/Y h:i a" }}). Solo se permite un voto por categoría.
+    <a href="{% url 'votaciones:mis_votos' %}" class="alert-link">Ver mis votos</a>
+  </div>
+{% endif %}
 
 <h2 class="h5 mt-4 mb-3">Opciones participantes ({{ votacion.opciones_activas|length }})</h2>
 {% if votacion.opciones_activas %}
-<div class="list-group mb-4">
-  {% for opcion in votacion.opciones_activas %}
-  <div class="list-group-item opcion d-flex gap-3 align-items-start">
-    {% if opcion.imagen %}<img src="{{ opcion.imagen.url }}" alt="{{ opcion.nombre }}" width="64" height="64" class="rounded object-fit-cover">{% endif %}
-    <div>
-      <p class="fw-semibold mb-1">{{ opcion.nombre }}</p>
+  {% if puede_votar %}
+  <form method="post" action="{% url 'votaciones:seleccionar_opcion' votacion.pk %}" id="form-voto">
+    {% csrf_token %}
+    <div class="list-group mb-3" role="radiogroup" aria-label="Opciones">
+      {% for opcion in votacion.opciones_activas %}
+      <label class="list-group-item opcion d-flex gap-3 align-items-start opcion-elegible">
+        <input class="form-check-input mt-1 flex-shrink-0" type="radio" name="opcion" value="{{ opcion.pk }}" required>
+        <span>
+          <span class="fw-semibold d-block">{{ opcion.nombre }}</span>
+          {% if opcion.descripcion %}<span class="small text-muted">{{ opcion.descripcion }}</span>{% endif %}
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-festival w-100">Continuar</button>
+    <p class="small text-muted mt-2 mb-0">En el siguiente paso podrá revisar su elección antes de confirmarla.</p>
+  </form>
+  {% else %}
+  <div class="list-group mb-4">
+    {% for opcion in votacion.opciones_activas %}
+    <div class="list-group-item opcion">
+      <p class="fw-semibold mb-1">{{ opcion.nombre }}{% if voto_previo.opcion_id == opcion.pk %} <span class="badge text-bg-success">Su voto</span>{% endif %}</p>
       {% if opcion.descripcion %}<p class="small text-muted mb-0">{{ opcion.descripcion }}</p>{% endif %}
     </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
+  {% endif %}
 {% else %}
-<p class="text-muted">Esta votación aún no tiene opciones registradas.</p>
+  <p class="text-muted">Esta votación aún no tiene opciones registradas.</p>
 {% endif %}
 
-<div class="tarjeta p-3 bg-white">
-  {% if not user.is_authenticated %}
-    <p class="mb-2">Para participar en las votaciones debe tener una cuenta.</p>
+{% if not user.is_authenticated %}
+  <div class="tarjeta p-3 bg-white mt-3">
+    <p class="mb-2">Para votar debe iniciar sesión.</p>
     <a class="btn btn-festival" href="{% url 'cuentas:login' %}?next={{ request.path|urlencode }}">Iniciar sesión</a>
     <a class="btn btn-outline-secondary" href="{% url 'cuentas:registro' %}">Registrarse</a>
-  {% elif voto %}
-    <p class="mb-0"><strong>Ya votó en esta votación.</strong> Su voto: <span class="fw-semibold">{{ voto.opcion.nombre }}</span>
-      <span class="small text-muted">({{ voto.fecha_hora|date:"d/m/Y h:i a" }})</span></p>
-  {% elif votacion.esta_abierta and votacion.opciones_activas %}
-    <form method="post" action="{% url 'votaciones:votar' votacion.pk %}">{% csrf_token %}
-      <fieldset>
-        <legend class="h6">Elija su opción</legend>
-        {% for opcion in votacion.opciones_activas %}
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="radio" name="opcion" id="op{{ opcion.pk }}" value="{{ opcion.pk }}" required>
-          <label class="form-check-label" for="op{{ opcion.pk }}">{{ opcion.nombre }}</label>
-        </div>
-        {% endfor %}
-      </fieldset>
-      <button type="submit" class="btn btn-festival mt-2">Votar</button>
-    </form>
-  {% else %}
-    <p class="mb-0 small text-muted">Esta votación no está abierta, por lo que no admite votos.</p>
-  {% endif %}
-</div>
+  </div>
+{% elif not habilitada %}
+  <div class="alert alert-secondary mt-3 mb-0">Esta votación no está habilitada en este momento, por lo que no admite votos.</div>
+{% endif %}
 {% endblock %}

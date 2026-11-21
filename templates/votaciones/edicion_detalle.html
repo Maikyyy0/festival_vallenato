@@ -16,7 +16,7 @@
   {% for categoria in categorias %}
   <div class="col">
     <div class="tarjeta p-3 h-100 position-relative bg-white">
-      <h3 class="h6 mb-1">{{ categoria.nombre }}</h3>
+      <div class="d-flex justify-content-between gap-2"><h3 class="h6 mb-1">{{ categoria.nombre }}</h3>{% if categoria.pk in votadas %}<span class="badge rounded-pill text-bg-success estado align-self-start">Ya votó</span>{% endif %}</div>
       {% if categoria.descripcion %}<p class="small mb-1">{{ categoria.descripcion|truncatewords:22 }}</p>{% endif %}
       <p class="small text-muted mb-0">{{ categoria.num_votaciones }} votaci{{ categoria.num_votaciones|pluralize:"ón,ones" }}</p>
       <a class="stretched-link" href="{{ categoria.get_absolute_url }}" aria-label="Ver {{ categoria.nombre }}"></a>
